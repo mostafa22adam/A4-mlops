@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-      FORCE_ACCURACY: ${{ vars.FORCE_ACCURACY }}
+      MLFLOW_TRACKING_URI: file:./mlruns
+      MODEL_MODE: ${{ vars.MODEL_MODE }}
 
     steps:
       - name: Checkout repository
@@ -37,27 +37,29 @@ jobs:
         run: |
           python train.py
 
-      - name: Upload model_info artifact
+      - name: Upload model_info and mlruns artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: model-info
-          path: model_info.txt
+          name: pipeline-artifacts
+          path: |
+            model_info.txt
+            mlruns
 
   deploy:
     needs: validate
     runs-on: ubuntu-latest
 
     env:
-      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      MLFLOW_TRACKING_URI: file:./mlruns
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download model_info artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: model-info
+          name: pipeline-artifacts
 
       - name: Set up Python
         uses: actions/setup-python@v5

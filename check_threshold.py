@@ -7,11 +7,9 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 THRESHOLD = 0.85
 
-# Read the run ID saved by validate job
 with open("model_info.txt", "r") as f:
     run_id = f.read().strip()
 
-# Fetch the run from MLflow
 run = mlflow.get_run(run_id)
 accuracy = run.data.metrics.get("accuracy")
 
