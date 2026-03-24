@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MLFLOW_TRACKING_URI: file:./mlruns
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
       MODEL_MODE: ${{ vars.MODEL_MODE }}
 
     steps:
@@ -37,12 +37,19 @@ jobs:
         run: |
           python train.py
 
-      - name: Upload model_info and mlruns artifacts
+      - name: Show generated files
+        run: |
+          ls -R
+          echo "----- model_info.txt -----"
+          cat model_info.txt
+
+      - name: Upload pipeline artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pipeline-artifacts
           path: |
             model_info.txt
+            mlflow.db
             mlruns
 
   deploy:
@@ -50,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MLFLOW_TRACKING_URI: file:./mlruns
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
 
     steps:
       - name: Checkout repository

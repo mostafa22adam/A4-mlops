@@ -7,17 +7,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment("Assignment5_Mostafa")
 
-# Use mode to create failed and successful runs in a more realistic way
 MODEL_MODE = os.getenv("MODEL_MODE", "good").lower()
 
-# Load dataset
 X, y = load_iris(return_X_y=True)
 
-# Split data
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )

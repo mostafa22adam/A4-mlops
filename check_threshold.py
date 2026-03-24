@@ -2,7 +2,7 @@ import os
 import sys
 import mlflow
 
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 THRESHOLD = 0.85
