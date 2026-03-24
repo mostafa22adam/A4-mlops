@@ -56,10 +56,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download artifacts
+      - name: Download artifacts into workspace root
         uses: actions/download-artifact@v4
         with:
           name: pipeline-artifacts
+          path: .
+
+      - name: Show downloaded files
+        run: |
+          pwd
+          ls -R
+          echo "----- model_info.txt -----"
+          cat model_info.txt
 
       - name: Set up Python
         uses: actions/setup-python@v5
