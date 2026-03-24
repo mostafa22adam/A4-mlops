@@ -34,7 +34,8 @@ jobs:
           dvc pull || echo "DVC pull skipped: remote not accessible on this runner"
 
       - name: Train and log to MLflow
-        run: python train.py
+        run: |
+          python train.py
 
       - name: Upload model_info artifact
         uses: actions/upload-artifact@v4
@@ -69,10 +70,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Check threshold from MLflow
-        run: python check_threshold.py
+        run: |
+          python check_threshold.py
 
       - name: Mock Docker build
-        run: echo "Building Docker image for Run ID: $(cat model_info.txt)"
+        run: |
+          echo "Building Docker image for Run ID: $(cat model_info.txt)"
 
       - name: Build Dockerfile with RUN_ID
-        run: docker build --build-arg RUN_ID=$(cat model_info.txt) -t assignment5-app .
+        run: |
+          docker build --build-arg RUN_ID=$(cat model_info.txt) -t assignment5-app .
