@@ -1,7 +1,6 @@
 venv/
-__pycache__/
-*.pyc
 mlruns/
 mlflow.db
-data/
+__pycache__/
+*.pyc
 model_info.txt

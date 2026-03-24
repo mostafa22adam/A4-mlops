@@ -1,14 +1,30 @@
 import os
 import sys
+import mlflow
 
-# Read forced accuracy from GitHub Actions variable
-accuracy = float(os.getenv("FORCE_ACCURACY", "0"))
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
-print(f"Model accuracy: {accuracy}")
+THRESHOLD = 0.85
 
-# Threshold check
-if accuracy < 0.85:
-    print("❌ Model failed threshold")
+# Read the run ID saved by validate job
+with open("model_info.txt", "r") as f:
+    run_id = f.read().strip()
+
+# Fetch the run from MLflow
+run = mlflow.get_run(run_id)
+accuracy = run.data.metrics.get("accuracy")
+
+if accuracy is None:
+    print("Error: accuracy metric not found in MLflow.")
     sys.exit(1)
-else:
-    print("✅ Model passed threshold")
+
+print(f"Run ID: {run_id}")
+print(f"Accuracy: {accuracy}")
+print(f"Threshold: {THRESHOLD}")
+
+if accuracy < THRESHOLD:
+    print("Model failed threshold.")
+    sys.exit(1)
+
+print("Model passed threshold.")

@@ -1,12 +1,12 @@
 import os
 import mlflow
 
-# Tracking URI from GitHub secret or local fallback
-mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
-mlflow.set_tracking_uri(mlflow_tracking_uri)
+# Use secret in GitHub Actions, and local fallback when testing on your laptop
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment("Assignment5_Mostafa")
 
-# We control accuracy using an environment variable
+# For screenshots: let us force a failed run or a successful run
 accuracy = float(os.getenv("FORCE_ACCURACY", "0.90"))
 
 with mlflow.start_run() as run:
@@ -19,5 +19,6 @@ with mlflow.start_run() as run:
     print(f"Training finished. Accuracy = {accuracy}")
     print(f"Run ID = {run_id}")
 
+    # Save the REAL current run ID for the next job
     with open("model_info.txt", "w") as f:
         f.write(run_id)
