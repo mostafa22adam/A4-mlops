@@ -1,4 +1,4 @@
-# A4 MLOps Project
+# Assignment 6 test
 
 This project contains a PyTorch training script with MLflow tracking.
 
