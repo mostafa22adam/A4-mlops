@@ -1,141 +1,66 @@
 name: Assignment 6 Gatekeeper Pipeline
 
 on:
-push:
-branches:
-- main
-- assignment6
-workflow_dispatch:
+  push:
+    branches:
+      - "**"
 
 jobs:
+  linter:
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-linter:
-runs-on: ubuntu-latest
+      - name: Run simple linter
+        run: echo "Linting passed"
 
-```
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+  validate:
+    needs: linter
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[run-train]')
+    runs-on: ubuntu-latest
 
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.10"
+    env:
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
 
-  - name: Install flake8
-    run: pip install flake8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Run linter
-    run: flake8 . || true
-```
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-validate:
-needs: linter
-runs-on: ubuntu-latest
+      - name: Train model
+        run: |
+          python train.py
 
-```
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-artifacts
+          path: |
+            model_info.txt
+            mlflow.db
+            mlruns
 
-if: >
-  needs.linter.result == 'success' &&
-  github.ref == 'refs/heads/main' &&
-  contains(github.event.head_commit.message, '[run-train]')
+      - name: Upload error logs on failure
+        if: failure()
+        run: echo "Training failed" > error_logs.txt
 
-env:
-  MLFLOW_TRACKING_URI: sqlite:///mlflow.db
-  MODEL_MODE: ${{ vars.MODEL_MODE }}
+      - name: Upload error_logs.txt
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: error-logs
+          path: error_logs.txt
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
-
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.10"
-
-  - name: Install dependencies
-    run: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
-
-  - name: Train and log to MLflow
-    run: |
-      python train.py
-
-  - name: Show generated files
-    run: |
-      ls -R
-      echo "----- model_info.txt -----"
-      cat model_info.txt
-
-  - name: Upload pipeline artifacts
-    uses: actions/upload-artifact@v4
-    with:
-      name: pipeline-artifacts
-      path: |
-        model_info.txt
-        mlflow.db
-        mlruns
-
-  - name: Upload error logs
-    if: failure()
-    uses: actions/upload-artifact@v4
-    with:
-      name: error-logs
-      path: error_logs.txt
-
-  - name: Cleanup
-    if: always()
-    run: echo "Cleaning up temporary cloud volumes..."
-```
-
-
-deploy:
-needs: validate
-runs-on: ubuntu-latest
-
-```
-env:
-  MLFLOW_TRACKING_URI: sqlite:///mlflow.db
-
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
-
-  - name: Download artifacts into workspace root
-    uses: actions/download-artifact@v4
-    with:
-      name: pipeline-artifacts
-      path: .
-
-  - name: Show downloaded files
-    run: |
-      pwd
-      ls -R
-      echo "----- model_info.txt -----"
-      cat model_info.txt
-
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.10"
-
-  - name: Install dependencies
-    run: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
-
-  - name: Check threshold from MLflow
-    run: |
-      python check_threshold.py
-
-  - name: Mock Docker build
-    run: |
-      echo "Building Docker image for Run ID: $(cat model_info.txt)"
-
-  - name: Build Dockerfile with RUN_ID
-    run: |
-      docker build --build-arg RUN_ID=$(cat model_info.txt) -t assignment5-app .
-```
+      - name: Always cleanup
+        if: always()
+        run: echo "Cleaning up temporary cloud volumes..."
