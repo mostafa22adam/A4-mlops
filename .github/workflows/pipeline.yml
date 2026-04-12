@@ -3,7 +3,7 @@ name: Assignment 6 Gatekeeper Pipeline
 on:
   push:
     branches:
-      - "**"
+      - main
 
 jobs:
   linter:
