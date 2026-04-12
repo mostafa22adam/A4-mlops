@@ -8,22 +8,20 @@ on:
 jobs:
   linter:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Run simple linter
         run: echo "Linting passed"
 
-  validate:
+  train:
     needs: linter
-    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[run-train]')
+    if: |
+      github.ref == 'refs/heads/main' &&
+      contains(github.event.head_commit.message, '[run-train]')
     runs-on: ubuntu-latest
-
     env:
       MLFLOW_TRACKING_URI: sqlite:///mlflow.db
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,12 +32,10 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Train model
-        run: |
-          python train.py
+        run: python train.py
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
