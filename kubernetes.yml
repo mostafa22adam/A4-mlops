@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+  name: my-app
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: web
+
+  template:
+    metadata:
+      labels:
+        app: web
+
+    spec:
+      containers:
+        - name: frontend
+          image: nginx
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              memory: "4Gi"      # high request for model loading
+              cpu: "2000m"       # 2 CPU cores
+              nvidia.com/gpu: 1  # request 1 GPU
+
+            limits:
+              memory: "8Gi"      # max memory
+              cpu: "4000m"       # max 4 CPU cores
+              nvidia.com/gpu: 1
